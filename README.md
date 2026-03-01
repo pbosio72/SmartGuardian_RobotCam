@@ -1,8 +1,7 @@
 # 📹 ESP32-CAM Smart Guardian RobotCam
 
 <p align="center">
-  <img src="Images/Img_05.jpg.png" alt="Smart Guardian RobotCam" width="600"/>
-  <img src="Browser_Interface_Images/Interface_2.png" alt="Smart Guardian RobotCam" width="600"/>
+  <img src="Images/Robot_Cam/Img_05.jpg" alt="Smart Guardian RobotCam" width="600"/>
 </p>
 
 <p align="center">
