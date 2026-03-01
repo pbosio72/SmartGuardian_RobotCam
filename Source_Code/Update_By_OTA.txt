@@ -1,0 +1,316 @@
+# 📡 AGGIORNAMENTO FIRMWARE OTA (Over-The-Air)
+## Guida completa in italiano
+
+---
+
+## 🎯 COS'È L'OTA?
+
+L'**OTA (Over-The-Air)** permette di aggiornare il firmware dell'ESP32-CAM **via WiFi**, senza dover collegare cavi USB.
+
+### ✅ VANTAGGI:
+- Nessun cavo necessario
+- Aggiornamenti da remoto
+- Comodo per dispositivi montati/incassati
+- Dispositivo può rimanere alimentato
+
+### ⚠️ IMPORTANTE:
+- Serve memoria flash sufficiente (almeno 50% libera)
+- Se l'aggiornamento fallisce, serve USB per recuperare
+- Durante l'update NON spegnere il dispositivo
+
+---
+
+## 📋 PREREQUISITI
+
+### Software necessario:
+- **Arduino IDE** (versione 1.8.19 o superiore)
+- **ESP32 Board Support** installato
+- **Driver CH340** (se usi Windows)
+
+### Informazioni dispositivo:
+- **Nome OTA**: `Monitor-CAM`
+- **Password OTA**: `12345678` (cambiabile nel codice)
+- **WiFi SSID**: `ESP32-CAM-Monitor`
+- **WiFi Password**: `12345678`
+
+---
+
+## 🚀 PROCEDURA AGGIORNAMENTO OTA
+
+### **STEP 1: Prima installazione (via USB)**
+
+La **prima volta** devi caricare il codice con supporto OTA via USB:
+
+1. Collega ESP32-CAM via USB
+2. Apri Arduino IDE
+3. Seleziona porta COM corretta
+4. Carica il codice `ESP32_CAM_Baby_Monitor_Positional.ino`
+5. Attendi completamento upload
+6. ESP32 si riavvia automaticamente
+
+✅ Ora il dispositivo supporta OTA!
+
+---
+
+### **STEP 2: Connessione WiFi**
+
+1. Sul tuo PC/Laptop, vai su **Impostazioni WiFi**
+2. Cerca rete WiFi: `ESP32-CAM-Monitor`
+3. Connettiti con password: `12345678`
+4. Attendi conferma connessione
+
+---
+
+### **STEP 3: Upload via OTA**
+
+#### **A. Seleziona porta di rete:**
+
+1. Apri **Arduino IDE**
+2. Vai su: `Tools` → `Port`
+3. Vedrai due opzioni:
+   ```
+   COM3 (USB)                              ← Non selezionare
+   Monitor-CAM at 192.168.4.1 (Network)    ← SELEZIONA QUESTA!
+   ```
+4. **Clicca** su `Monitor-CAM at 192.168.4.1`
+5. Imposta Tools → Partition Scheme -> "Minimal SPIFFS (1.9MB APP with OTA / 190KB SPIFFS)"
+
+> **NOTA**: Se non vedi il dispositivo OTA, verifica:
+> - Sei connesso al WiFi ESP32-CAM-Monitor
+> - ESP32 è acceso e funzionante
+> - Firewall non blocca mDNS (porta 5353)
+
+#### **B. Carica il nuovo firmware:**
+
+1. Apri il codice aggiornato nell'Arduino IDE
+2. Clicca su **Upload** (freccia → in alto)
+3. Ti chiederà la **password OTA**
+4. Inserisci: `12345678`
+5. Premi **OK**
+
+#### **C. Attendi completamento:**
+
+Durante l'upload vedrai:
+
+**Su Arduino IDE:**
+```
+Connecting to Monitor-CAM...
+Authentication OK
+Uploading: [████████████████] 98%
+Upload complete
+```
+
+**Su OLED Display (ESP32-CAM):**
+```
+OTA Update
+Progress:
+45%
+```
+
+⏱️ L'upload richiede circa **30-60 secondi**.
+
+---
+
+### **STEP 4: Riavvio automatico**
+
+1. Al termine dell'upload, ESP32 si **riavvia automaticamente**
+2. L'OLED mostrerà: `OTA Update Complete! Rebooting...`
+3. Dopo 5 secondi torna alla schermata normale
+4. ✅ **Aggiornamento completato!**
+
+---
+
+## ❌ RISOLUZIONE PROBLEMI
+
+### **Problema: "Monitor-CAM" non appare nella lista porte**
+
+**Soluzioni:**
+
+1. **Verifica connessione WiFi:**
+   - Sei connesso a `ESP32-CAM-Monitor`?
+   - Prova a disconnettere e riconnettere
+
+2. **Riavvia ESP32:**
+   - Scollega alimentazione
+   - Attendi 5 secondi
+   - Ricollega alimentazione
+
+3. **Riavvia Arduino IDE:**
+   - Chiudi completamente Arduino IDE
+   - Riapri e controlla lista porte
+
+4. **Verifica firewall:**
+   - Windows: Aggiungi eccezione per Arduino IDE
+   - Mac: System Preferences → Security → Allow Arduino
+
+5. **Ping manuale:**
+   - Apri terminale/prompt
+   - Digita: `ping 192.168.4.1`
+   - Dovrebbe rispondere
+
+---
+
+### **Problema: "Authentication Failed"**
+
+**Causa:** Password OTA errata
+
+**Soluzione:**
+- La password OTA di default è: `12345678`
+- Se l'hai cambiata nel codice, usa quella nuova
+- La password è **case-sensitive** (maiuscole/minuscole contano)
+
+---
+
+### **Problema: Upload si blocca o fallisce**
+
+**Soluzioni:**
+
+1. **Avvicina il PC all'ESP32:**
+   - Segnale WiFi debole può causare errori
+   - Mantieni distanza < 5 metri
+
+2. **Riprova upload:**
+   - Clicca di nuovo Upload
+   - Spesso funziona al secondo tentativo
+
+3. **Verifica memoria disponibile:**
+   - Se memoria < 50%, OTA potrebbe fallire
+   - Riduci dimensione codice o immagini
+
+4. **Usa USB come backup:**
+   - Se OTA continua a fallire
+   - Riconnetti via USB e carica normalmente
+
+---
+
+### **Problema: ESP32 non risponde dopo OTA fallito**
+
+⚠️ **RECOVERY MODE:**
+
+Se l'aggiornamento OTA è fallito e l'ESP32 è "bloccato":
+
+1. **Collega via USB**
+2. **Premi e tieni premuto** il pulsante BOOT sull'ESP32
+3. **Premi e rilascia** il pulsante RESET
+4. **Rilascia** il pulsante BOOT dopo 2 secondi
+5. **Carica il firmware via USB**
+6. ESP32 torna operativo
+
+---
+
+## 🔐 SICUREZZA
+
+### **Cambiare password OTA:**
+
+Nel file `.ino`, modifica la riga:
+
+```cpp
+const char* ota_password = "12345678";  // Cambia questa!
+```
+
+### **Raccomandazioni:**
+
+- ✅ Usa password forte (min 12 caratteri)
+- ✅ Include numeri, lettere, simboli
+- ✅ Non usare password WiFi e OTA identiche
+- ⚠️ Dopo aver cambiato password, **ricarica via USB** una volta
+
+**Esempio password sicura:**
+```cpp
+const char* ota_password = "BabyMon!2025@Secure";
+```
+
+---
+
+## 📊 STATO MEMORIA
+
+Per verificare memoria disponibile dopo upload:
+
+**Arduino IDE:**
+```
+Sketch uses 267040 bytes (26%) of program storage space.
+Maximum is 1048576 bytes.
+```
+
+✅ Sotto 50% = OTA sicuro
+⚠️ Sopra 50% = OTA potrebbe fallire
+❌ Sopra 75% = OTA sconsigliato
+
+---
+
+## 🛠️ COMANDI AVANZATI
+
+### **Test connettività OTA (Windows):**
+
+```cmd
+ping Monitor-CAM.local
+```
+
+### **Test connettività OTA (Mac/Linux):**
+
+```bash
+ping Monitor-CAM.local
+avahi-browse -a
+```
+
+### **Verifica mDNS:**
+
+```bash
+dns-sd -B _arduino._tcp
+```
+
+Dovresti vedere:
+```
+Monitor-CAM._arduino._tcp.local
+```
+
+---
+
+## 📝 CHECKLIST PRE-UPDATE
+
+Prima di ogni aggiornamento OTA:
+
+- [ ] Backup codice funzionante salvato
+- [ ] Memoria flash < 50% usata
+- [ ] ESP32 alimentato stabilmente (no batteria scarica)
+- [ ] Connesso a WiFi ESP32-CAM-Monitor
+- [ ] Password OTA corretta
+- [ ] Arduino IDE vede dispositivo in lista porte
+- [ ] Nessuno sta usando la telecamera (per sicurezza)
+
+---
+
+## ✅ VANTAGGI OTA IN QUESTO PROGETTO
+
+1. **Baby monitor montato a parete/soffitto:**
+   - Non serve smontare per aggiornare
+   - Aggiornamenti rapidi
+
+2. **Nuove funzionalità:**
+   - Aggiungi features senza cavi
+   - Fix bug da remoto
+
+3. **Manutenzione semplificata:**
+   - Aggiorna da qualsiasi stanza
+   - Non disturbi il bambino
+
+---
+
+## 🆘 SUPPORTO
+
+Se hai problemi con OTA:
+
+1. Controlla questa guida per soluzioni comuni
+2. Verifica README.md per informazioni hardware
+3. Usa GitHub Issues per segnalare bug
+4. Come ultima risorsa: upload via USB sempre funziona!
+
+---
+
+**Ultima modifica:** 2025-02-21  
+**Versione guida:** 1.0  
+**Autore:** ESP32-CAM Baby Monitor Project
+
+---
+
+**💡 SUGGERIMENTO:** Dopo ogni aggiornamento OTA riuscito, testa tutte le funzionalità (camera, servo, flash) per assicurarti che tutto funzioni correttamente!

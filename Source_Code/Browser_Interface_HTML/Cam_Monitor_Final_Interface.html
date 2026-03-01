@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title> Monitor CAM </title>
+<meta name='theme-color' content='#1e3c72'>
+<meta name='apple-mobile-web-app-capable' content='yes'>
+<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>
+<style>
+body{
+  font-family:'Segoe UI',sans-serif;
+  text-align:center;
+  margin:0;
+  background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);
+  color:#fff;
+  padding:5px;
+  min-height:100vh;
+  transition:background 0.5s;
+}
+h1{
+  margin:10px;
+  font-size:22px;
+  text-shadow:2px 2px 4px rgba(0,0,0,0.3);
+  font-weight:300;
+}
+#imageContainer{
+  width:100%;
+  max-width:640px;
+  margin:8px auto;
+  border:2px solid rgba(100,200,255,0.4);
+  border-radius:10px;
+  overflow:hidden;
+  background:#000;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  transition:border-color 0.5s;
+  cursor:pointer;
+  position:relative;
+}
+#imageContainer::after{
+  content:'Double-click for fullscreen';
+  position:absolute;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,0.7);
+  padding:5px 10px;
+  border-radius:5px;
+  font-size:11px;
+  opacity:0;
+  transition:opacity 0.3s;
+}
+#imageContainer:hover::after{
+  opacity:1;
+}
+img{
+  width:100%;
+  display:block;
+  min-height:150px;
+}
+button{
+  background:linear-gradient(135deg,#00d4ff 0%,#0099cc 100%);
+  color:#fff;
+  border:none;
+  padding:5px 12px;
+  font-size:11px;
+  margin:3px;
+  cursor:pointer;
+  border-radius:15px;
+  min-width:70px;
+  font-weight:600;
+  transition:all 0.3s;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(0,212,255,0.4);
+}
+button:active{
+  transform:translateY(0);
+  box-shadow:0 2px 6px rgba(0,0,0,0.2);
+}
+.off{
+  background:linear-gradient(135deg,#ff6b6b 0%,#ee5a6f 100%);
+}
+.photo{
+  background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);
+}
+.rotate{
+  background:linear-gradient(135deg,#43e97b 0%,#38f9d7 100%);
+  transition:background 0.5s;
+}
+.resolution{
+  background:linear-gradient(135deg,#a8edea 0%,#fed6e3 100%);
+  color:#1e3c72;
+}
+.home{
+  background:linear-gradient(135deg,#ffd89b 0%,#19547b 100%);
+  font-size:12px;
+  font-weight:700;
+  transition:background 0.5s;
+}
+.preset-save{
+  background:linear-gradient(135deg,#a8edea 0%,#fed6e3 100%);
+  color:#1e3c72;
+  transition:background 0.5s;
+}
+.preset-recall{
+  background:linear-gradient(135deg,#43e97b 0%,#38f9d7 100%);
+  transition:background 0.5s;
+}
+.slider-container{
+  margin:8px auto;
+  max-width:300px;
+}
+input[type=range]{
+  width:100%;
+  height:6px;
+  -webkit-appearance:none;
+  background:rgba(0,212,255,0.2);
+  outline:none;
+  border-radius:8px;
+  transition:background 0.5s;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:18px;
+  height:18px;
+  background:#00d4ff;
+  cursor:pointer;
+  border-radius:50%;
+  box-shadow:0 2px 6px rgba(0,212,255,0.5);
+}
+input[type=range]::-moz-range-thumb{
+  width:18px;
+  height:18px;
+  background:#00d4ff;
+  cursor:pointer;
+  border-radius:50%;
+  border:none;
+}
+.section{
+  margin:8px auto;
+  padding:8px;
+  max-width:640px;
+  background:rgba(100,200,255,0.15);
+  backdrop-filter:blur(10px);
+  border-radius:12px;
+  border:1px solid rgba(100,200,255,0.3);
+  box-shadow:0 4px 15px rgba(0,0,0,0.2);
+  transition:all 0.5s;
+}
+.section h3{
+  color:#fff;
+  margin:5px 0 8px 0;
+  font-weight:400;
+  font-size:13px;
+}
+.compact-row{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:3px;
+}
+#colorPicker{
+  background:linear-gradient(to right,hsl(0,100%,50%),hsl(60,100%,50%),hsl(120,100%,50%),hsl(180,100%,50%),hsl(240,100%,50%),hsl(300,100%,50%),hsl(360,100%,50%));
+  height:20px;
+  border:2px solid rgba(255,255,255,0.3);
+}
+#colorPicker::-webkit-slider-thumb{
+  width:24px;
+  height:24px;
+  border:2px solid white;
+}
+#colorPicker::-moz-range-thumb{
+  width:24px;
+  height:24px;
+  border:2px solid white;
+}
+</style>
+</head>
+<body>
+<h1>📹 Monitor CAM</h1>
+
+<div id='imageContainer' ondblclick='toggleFullscreen()'>
+  <img id='stream' src='https://via.placeholder.com/640x480/000000/FFFFFF?text=ESP32-CAM+Stream+(Double-click+fullscreen)'>
+</div>
+
+<!-- Camera Position with NEW LAYOUT -->
+<div class='section'>
+  <h3>Camera Position</h3>
+  <div class='slider-container'>
+    <label style='font-size:11px'>Pan (Horizontal):</label>
+    <input type='range' min='0' max='180' value='90' id='panSlider' oninput='setPan(this.value)'>
+  </div>
+  <div class='slider-container'>
+    <label style='font-size:11px'>Tilt (Vertical):</label>
+    <input type='range' min='0' max='180' value='90' id='tiltSlider' oninput='setTilt(this.value)'>
+  </div>
+  
+  <!-- NEW LAYOUT: POS top, HOME/RESET center, SAVE bottom -->
+  <div class='compact-row' style='margin-top:8px'>
+    <button class='preset-recall' onclick='recallPreset(1)' style='font-size:10px;min-width:60px;padding:4px 8px'>POS 1</button>
+    <button class='preset-recall' onclick='recallPreset(2)' style='font-size:10px;min-width:60px;padding:4px 8px'>POS 2</button>
+    <button class='preset-recall' onclick='recallPreset(3)' style='font-size:10px;min-width:60px;padding:4px 8px'>POS 3</button>
+  </div>
+  
+  <div style='margin-top:5px;text-align:center'>
+    <button class='home' onclick='goHome()' style='margin:3px;min-width:80px'>HOME</button><br>
+    <button class='off' onclick='resetPresets()' style='margin:3px;font-size:10px;min-width:80px;padding:4px 8px'>RESET</button>
+  </div>
+  
+  <div class='compact-row' style='margin-top:5px'>
+    <button class='preset-save' onclick='savePreset(1)' style='font-size:10px;min-width:60px;padding:4px 8px'>SAVE 1</button>
+    <button class='preset-save' onclick='savePreset(2)' style='font-size:10px;min-width:60px;padding:4px 8px'>SAVE 2</button>
+    <button class='preset-save' onclick='savePreset(3)' style='font-size:10px;min-width:60px;padding:4px 8px'>SAVE 3</button>
+  </div>
+</div>
+
+<!-- Flash Controls -->
+<div class='section'>
+  <h3>Flash</h3>
+  <div class='compact-row'>
+    <button onclick='flashOn()'>ON</button>
+    <button class='off' onclick='flashOff()'>OFF</button>
+    <button class='photo' onclick='takePhoto()'>PHOTO</button>
+  </div>
+  <div class='slider-container'>
+    <input type='range' min='0' max='255' value='0' id='brightness' oninput='setBrightness(this.value)'>
+    <span id='brightnessValue' style='font-size:14px;font-weight:600'>0</span>
+  </div>
+</div>
+
+<!-- Settings -->
+<div class='section'>
+  <h3>Settings</h3>
+  <div class='slider-container'>
+    <label style='font-size:11px'>FPS:</label>
+    <input type='range' min='100' max='2000' value='150' id='fpsSlider' oninput='setFPS(this.value)' step='50'>
+    <span id='fpsValue' style='font-size:14px;font-weight:600'>6.7 fps</span>
+  </div>
+  <div class='compact-row' style='margin-top:8px'>
+    <button class='rotate' onclick='setRotation("normal")'>NORMAL</button>
+    <button class='rotate' onclick='setRotation("180")'>FLIP 180</button>
+  </div>
+</div>
+
+<!-- Resolution -->
+<div class='section'>
+  <h3>Resolution</h3>
+  <div class='compact-row'>
+    <button class='resolution' onclick='setResolution("vga")'>VGA</button>
+    <button class='resolution' onclick='setResolution("svga")'>SVGA</button>
+    <button class='resolution' onclick='setResolution("xga")'>XGA</button>
+  </div>
+</div>
+
+<!-- Status Bar -->
+<div style='background:rgba(0,0,0,0.3);padding:8px;border-radius:8px;margin:8px auto;max-width:640px;font-size:11px'>
+  <span style='color:rgba(255,255,255,0.7)'>Res:</span> <span id='currentRes' style='color:#4facfe;font-weight:600'>VGA</span> | 
+  <span style='color:rgba(255,255,255,0.7)'>FPS:</span> <span id='currentFps' style='color:#4facfe;font-weight:600'>6.7</span>
+</div>
+
+<!-- Color Theme -->
+<div class='section' style='background:rgba(0,0,0,0.4);border:2px solid rgba(255,255,255,0.3);margin-top:15px'>
+  <h3>🎨 Color Theme</h3>
+  <div class='slider-container'>
+    <label style='font-size:11px'>Choose Color (HUE):</label>
+    <input type='range' min='0' max='360' value='210' id='colorPicker' oninput='updateThemeColor(this.value)'>
+    <div style='margin-top:5px;font-size:10px'>
+      <span style='color:rgba(255,255,255,0.7)'>HUE:</span> 
+      <span id='hueValue' style='color:#4facfe;font-weight:600'>210°</span>
+      <span style='margin-left:10px'>|</span>
+      <span style='margin-left:10px'>
+        <span id='colorPreview' style='display:inline-block;width:20px;height:20px;border-radius:50%;vertical-align:middle;border:2px solid white'></span>
+      </span>
+    </div>
+    <div style='margin-top:8px;font-size:9px;color:rgba(255,255,255,0.5)'>
+      Preset: 
+      <button onclick='updateThemeColor(210)' style='min-width:40px;padding:3px 8px;font-size:9px;background:#1e3c72'>Blue</button>
+      <button onclick='updateThemeColor(340)' style='min-width:40px;padding:3px 8px;font-size:9px;background:#ee0979'>Pink</button>
+      <button onclick='updateThemeColor(120)' style='min-width:40px;padding:3px 8px;font-size:9px;background:#56ab2f'>Green</button>
+      <button onclick='updateThemeColor(30)' style='min-width:40px;padding:3px 8px;font-size:9px;background:#ff6a00'>Orange</button>
+      <button onclick='updateThemeColor(280)' style='min-width:40px;padding:3px 8px;font-size:9px;background:#9b59b6'>Purple</button>
+    </div>
+  </div>
+</div>
+
+<!-- Info Footer -->
+<div style='margin:15px auto;padding:10px;max-width:640px;background:rgba(0,0,0,0.3);border-radius:8px;font-size:10px;color:rgba(255,255,255,0.6)'>
+  ESP32-CAM Monitor CAM v1.0 | WiFi: ESP32-CAM-Monitor | IP: 192.168.4.1 | OTA Ready ✅
+</div>
+
+<script>
+let img = document.getElementById('stream');
+let refreshInterval;
+let currentRefreshRate = 150;
+
+// Simulated preset storage
+let presets = {
+  1: {pan: 90, tilt: 90},
+  2: {pan: 90, tilt: 90},
+  3: {pan: 90, tilt: 90}
+};
+
+function updateImage() {
+  console.log('Image refresh');
+}
+
+function flashOn() {
+  console.log('Flash ON');
+}
+
+function flashOff() {
+  console.log('Flash OFF');
+  document.getElementById('brightness').value = 0;
+  document.getElementById('brightnessValue').textContent = '0';
+}
+
+function setBrightness(val) {
+  console.log('Brightness:', val);
+  document.getElementById('brightnessValue').textContent = val;
+}
+
+function setRotation(mode) {
+  console.log('Rotation:', mode);
+}
+
+function setResolution(res) {
+  console.log('Resolution:', res);
+  document.getElementById('currentRes').textContent = res.toUpperCase();
+}
+
+function setFPS(val) {
+  currentRefreshRate = 2100 - parseInt(val);
+  let fps = (1000 / currentRefreshRate).toFixed(1);
+  document.getElementById('fpsValue').textContent = fps + ' fps';
+  document.getElementById('currentFps').textContent = fps;
+  clearInterval(refreshInterval);
+  refreshInterval = setInterval(updateImage, currentRefreshRate);
+  console.log('FPS:', fps);
+}
+
+function takePhoto() {
+  console.log('Photo captured!');
+  alert('📸 Photo downloaded!');
+}
+
+function setPan(angle) {
+  console.log('Pan:', angle + '°');
+}
+
+function setTilt(angle) {
+  console.log('Tilt:', angle + '°');
+}
+
+function goHome() {
+  console.log('🏠 Going HOME (90°, 90°)');
+  document.getElementById('panSlider').value = 90;
+  document.getElementById('tiltSlider').value = 90;
+  setPan(90);
+  setTilt(90);
+}
+
+function savePreset(slot) {
+  let pan = document.getElementById('panSlider').value;
+  let tilt = document.getElementById('tiltSlider').value;
+  presets[slot] = {pan: parseInt(pan), tilt: parseInt(tilt)};
+  console.log('💾 Preset', slot, 'saved:', presets[slot]);
+  alert('✅ Position ' + slot + ' saved!\n📍 Pan: ' + pan + '° | Tilt: ' + tilt + '°');
+}
+
+function recallPreset(slot) {
+  let preset = presets[slot];
+  console.log('📍 Recalling preset', slot, ':', preset);
+  document.getElementById('panSlider').value = preset.pan;
+  document.getElementById('tiltSlider').value = preset.tilt;
+  setPan(preset.pan);
+  setTilt(preset.tilt);
+}
+
+function resetPresets() {
+  if (confirm('⚠️ Reset all preset positions to default (90°/90°)?')) {
+    presets = {
+      1: {pan: 90, tilt: 90},
+      2: {pan: 90, tilt: 90},
+      3: {pan: 90, tilt: 90}
+    };
+    console.log('🔄 All presets reset to default');
+    alert('✅ All presets reset to default (90°/90°)');
+  }
+}
+
+function toggleFullscreen() {
+  const elem = document.getElementById('imageContainer');
+  if (!document.fullscreenElement) {
+    elem.requestFullscreen().catch(err => {
+      console.log('Fullscreen error:', err);
+      alert('⚠️ Fullscreen not supported or blocked');
+    });
+    console.log('📺 Entered fullscreen mode');
+  } else {
+    document.exitFullscreen();
+    console.log('📺 Exited fullscreen mode');
+  }
+}
+
+function updateThemeColor(hue) {
+  hue = parseInt(hue);
+  document.getElementById('hueValue').textContent = hue + '°';
+  document.getElementById('colorPicker').value = hue;
+  
+  const compHue = (hue + 180) % 360;
+  const hue1 = (hue + 30) % 360;
+  const mainLight = 'hsl(' + hue + ',60%,60%)';
+  const mainDark = 'hsl(' + hue + ',80%,40%)';
+  const bgColor1 = 'hsl(' + hue + ',50%,30%)';
+  const bgColor2 = 'hsl(' + hue1 + ',50%,35%)';
+  
+  document.getElementById('colorPreview').style.background = 'hsl(' + hue + ',70%,50%)';
+  document.body.style.background = 'linear-gradient(135deg,' + bgColor1 + ' 0%,' + bgColor2 + ' 100%)';
+  document.getElementById('imageContainer').style.borderColor = 'hsla(' + hue + ',70%,60%,0.5)';
+  
+  document.querySelectorAll('.section').forEach(s => {
+    s.style.background = 'hsla(' + hue + ',60%,50%,0.15)';
+    s.style.borderColor = 'hsla(' + hue + ',60%,50%,0.3)';
+  });
+  
+  const home = document.querySelector('.home');
+  if (home) {
+    home.style.background = 'linear-gradient(135deg,hsl(' + compHue + ',70%,60%) 0%,hsl(' + compHue + ',70%,45%) 100%)';
+  }
+  
+  document.querySelectorAll('.rotate').forEach(b =>
+    b.style.background = 'linear-gradient(135deg,hsl(' + compHue + ',60%,55%) 0%,hsl(' + compHue + ',60%,45%) 100%)'
+  );
+  
+  document.querySelectorAll('input[type=range]').forEach(s => {
+    if (s.id !== 'colorPicker') {
+      s.style.background = 'hsla(' + hue + ',70%,50%,0.2)';
+    }
+  });
+  
+  console.log('🎨 Theme color updated to HUE:', hue);
+}
+
+// Initialize
+refreshInterval = setInterval(updateImage, currentRefreshRate);
+updateThemeColor(210);
+
+console.log('✅ ESP32-CAM Monitor CAM Interface Loaded');
+console.log('📋 Features:');
+console.log('  • Fullscreen: Double-click on video');
+console.log('  • 3 Preset Positions with RESET');
+console.log('  • Color Themes (HUE picker)');
+console.log('  • PWA Ready');
+console.log('  • OTA Updates');
+</script>
+</body>
+</html>
